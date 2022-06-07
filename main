@@ -1,0 +1,1056 @@
+aimport mysql.connector as mysql
+
+olib_db = mysql.connect(           # olib_db => Online Library Database
+  host="localhost",
+  user="root",
+  password="ali123",
+  database="onlinelibrary"
+)
+olib= olib_db.cursor()
+# print(olib)
+# print(olib_db)
+
+
+import tkinter
+from tkinter import *
+from tkinter import ttk
+import datetime
+from datetime import  timedelta
+from typing import Sized
+from tkinter import messagebox
+fp = tkinter.Tk()
+
+s = ttk.Style()
+s.theme_use('clam')
+
+def mainPage():
+    fp.geometry("1500x800")
+    fp.configure(bg='floral white')
+
+   
+    
+
+    logo = Canvas(fp,bg = "alice blue",height = "100",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+    userName = Label(fp, text= "Are You a : ",font= "Helvetica 15 italic",background="floral white")
+    userName.place(x=450, y= 200)
+    libclickBtn = Button(fp,text = 'Librarian',font="Times 22 bold",background="navajo white", command= lambda:librarianPressBtn(fp))
+    libclickBtn.place(x= 450 , y =250)
+    userName = Label(fp, text= "OR: ",font= "Helvetica 15 italic",background="floral white")
+    userName.place(x=450, y= 315)
+    userclickBtn = Button(fp,text = 'User',font="Times 22 bold",background="navajo white", command= lambda:buttonPressed())
+    userclickBtn.place(x= 450 , y =350)
+
+
+    fp.mainloop()
+def librarianPressBtn(fp):
+    fp.destroy()
+    lp1 = tkinter.Tk()
+    lp1.geometry("1500x800")
+    lp1.configure(bg='floral white')
+
+    logo = Canvas(lp1, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+  
+  
+    Lib_ID = Label(lp1, text= "Admin ID", font= "Times 14 bold")
+    Lib_ID.place(x=500, y= 200)
+    passWord = Label(lp1, text='Password',font= "Times 14 bold")
+    passWord.place(x= 500, y = 260)
+    Lib_ID_textfield =Text(lp1, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    Lib_ID_textfield.place(x = 600, y= 200)
+    passWord_textfield = Text(lp1, width =30,height =1,bd =2, fg='black',font=("Times 12"))
+    passWord_textfield.place(x= 600, y= 260)
+    loginBtn = Button(lp1,text = 'Login',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:Lib_LoginPress(lp1,Lib_ID_textfield,passWord_textfield))
+    loginBtn.place(x= 600 , y =320)
+
+def Lib_LoginPress(lp1,Lib_ID, password):
+    Lib_id = Lib_ID.get('1.0', "1.0 lineend")
+    Lib_ID = (Lib_id,)
+    # print(user_ID)
+    passWorD = password.get('1.0', "1.0 lineend")
+    password = (passWorD,)
+
+    print(Lib_ID,password)
+    # print(password)
+    olib.execute("SELECT  lib_id  from librarian_credentials ")
+    lib_id_result = olib.fetchall()
+    olib.execute("SELECT password from librarian_credentials")
+    password_result = olib.fetchall()
+    print(password_result,lib_id_result)
+    exist = 0
+
+    for i in range(len(lib_id_result)):
+        if lib_id_result[i] == Lib_ID and password_result[i] == password:
+            exist = 1
+
+    if exist == 1:
+        Lib_HomePage(lp1,Lib_ID)
+    else:
+        invalid_msg = Label(lp1,text="Wrong Admin ID or Password , Please Try Again", font= "Times 12 bold ",fg ="Red"  )
+        invalid_msg.place(x= 800, y = 330)
+
+
+
+
+def Lib_HomePage(lp1,Lib_id):
+    lp1.destroy()
+    lm = tkinter.Tk()
+    lm.geometry("1500x800")
+    lm.configure(bg='floral white')
+
+    logo = Canvas(lm, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    Add_book_Btn = Button(lm,text = 'Add New Book',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:addnewbook(lm,Lib_id))
+    Add_book_Btn.place(x= 600 , y =200)
+
+    Del_book_Btn = Button(lm,text = 'Delete Book',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:delete(lm))
+    Del_book_Btn.place(x= 600 , y =250)
+
+    Edit_book_Btn = Button(lm,text = 'Edit Book Details ',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:edit_book(lm,Lib_id))
+    Edit_book_Btn.place(x= 600 , y =300)
+
+    Del_user_Btn = Button(lm,text = 'Delete User',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:delet(lm))
+    Del_user_Btn.place(x= 600 , y =350)
+
+    # Change_Btn = Button(lm,text = 'Change Subscription Time',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:loginBtn_press(userID_textfield,passWord_textfield,lm))
+    # Change_Btn.place(x= 600 , y =400)
+
+    MaxBooksBtn = Button(lm,text = 'Users with Max Books',width=20, font=" Times 14 bold", bg= "navajo white",   command= lambda:max_books(lm))
+    MaxBooksBtn.place(x =600, y =400)
+    lm.mainloop()
+
+def max_books(lm):
+    lmx = tkinter.Tk()
+    lmx.geometry("1500x800")
+    lmx.configure(bg='floral white')
+
+    logo = Canvas(lmx, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    # olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    # olib= olib_db.cursor()
+
+    # olib.execute("SELECT DISTINCT category from book")
+    # all_cats = olib.fetchall()  
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    olib.execute("SELECT user_id, count(user_id) as num FROM getbook GROUP BY user_id ORDER BY num DESC")
+    all_useers = olib.fetchall()  
+
+    max_books_tree = ttk.Treeview(lmx, show='headings', height=15)
+    max_books_tree['columns'] = ['User_ID', 'Count']
+    max_books_tree.column('User_ID',anchor=CENTER, width=150, minwidth=50)
+    max_books_tree.heading('User_ID',text= 'User_ID')
+    max_books_tree.column('Count',anchor=CENTER, width=150, minwidth=50)
+    max_books_tree.heading('Count',text= 'No. of Books')
+    # max_books_tree.bind('<ButtonRelease-1>', select_cat)
+
+    counter = 0
+    for i in range(len(all_useers)):
+        counter += 1
+        user_data = all_useers[i]
+        print(user_data[0])
+        max_books_tree.insert('', 'end', text=counter, values=(user_data[0],user_data[1]))
+    max_books_tree.place(x = 200, y =200)
+
+    max_books_Label = Label(lmx, text =  "  Users with Max Books ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+    max_books_Label.place(x= 200, y = 150)
+
+def addnewbook(lm,Lib_id):
+    ab= tkinter.Tk()
+    ab.geometry("1500x800")
+    ab.configure(bg='floral white')
+    logo = Canvas(ab, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="ADD NEW BOOK ")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="Details")
+   
+    booknamee_textfield =Text(ab, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    booknamee_textfield.place(x = 630, y= 200)
+    
+
+
+    bookisbns_textfield =Text(ab, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    bookisbns_textfield.place(x = 650, y= 250)
+    
+
+    author_textfield =Text(ab, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    author_textfield.place(x = 630, y= 300)
+    
+
+    
+
+    categoryy_textfield =Text(ab, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    categoryy_textfield.place(x = 630, y= 350)
+    typee_textfield =Text(ab, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    typee_textfield.place(x = 630, y= 400)
+
+    bookName = Label(ab, text= "BookName", font= "Times 14 bold")
+    bookName.place(x=530, y= 200)
+
+    isbn = Label(ab, text= "BOOKISBN", font= "Times 14 bold")
+    isbn.place(x=540, y= 250)
+
+
+    category = Label(ab, text= "Author", font= "Times 14 bold")
+    category.place(x=530, y= 300)
+
+    author = Label(ab, text='Category',font= "Times 14 bold")
+    author.place(x= 530, y = 350)
+
+    type = Label(ab, text='Type',font= "Times 14 bold")
+    type.place(x= 530, y = 400)
+    addBtn = Button(ab,text = 'ADD',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:addbookdetails(ab,booknamee_textfield,bookisbns_textfield, author_textfield,categoryy_textfield,typee_textfield,Lib_id))
+    addBtn.place(x= 600 , y =500)
+
+    
+    ab.mainloop()
+def addbookdetails(ab,booknamee_textfield,bookisbns_textfield, author_textfield,categoryy_textfield,type_textfield,Lib_id):
+    name=booknamee_textfield.get('1.0',END)
+    isbn=bookisbns_textfield.get('1.0',END)
+    at=author_textfield.get('1.0',END)
+    ct=categoryy_textfield.get('1.0',END)
+    ty=type_textfield.get('1.0',END)
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    olib.execute("SELECT book_ISBN from book")
+    all_userids= olib.fetchall()
+    exists = 0
+    for i in all_userids:
+        if i==isbn:
+            exists=1
+
+    if exists==1:
+        isbn = Label(ab, text= "Book having this isbn already present", font= "Times 14 bold")
+        isbn.place(x=540, y= 600)
+    else:
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        query_useer = "INSERT INTO book (book_ISBN, book_title, author, booktype, category) VALUES (%s, %s, %s,%s,%s)"
+        values = (isbn,name,at,ty,ct)
+        print(values)
+        olib.execute(query_useer, values)
+        olib_db.commit()
+        messagebox.showinfo("showinfo", "congrads you have added new book",parent= ab)
+       
+
+def delete(lm):
+    fa= tkinter.Tk()
+    fa.geometry("1500x800")
+    fa.configure(bg='floral white')
+    logo = Canvas(fa,bg = "alice blue",height = "100",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Delete your desirable")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="BOOK")
+    deleteisbns_textfield =Text(fa, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    deleteisbns_textfield.place(x = 650, y= 250)
+
+
+    delBtn = Button(fa,text = 'Delete Book',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:deletebook(fa,deleteisbns_textfield))
+    delBtn.place(x= 600 , y =400)
+    isbn = Label(fa, text= "BOOKISBN", font= "Times 14 bold")
+    isbn.place(x=540, y= 250)
+    fa.mainloop()
+
+
+def delete_user(lmd,delUser_textfield):
+    user_id=delUser_textfield.get('1.0',END)
+    user_idd=(user_id,)
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    olib.execute("SELECT user_id from useer")
+    all_ids= olib.fetchall()
+    print(all_ids)
+   
+    available=0
+    for i in all_ids:
+        userid= i
+        b = str(userid[0])
+        a = b.strip()
+        c = str(user_id)
+        d  = c.strip()
+        if a == d:
+            available =1
+    if available==1:
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("DELETE FROM useer where user_id = %s",user_idd)
+        olib_db.commit()
+        messagebox.showinfo("showinfo", "User Deleted From database",parent= lmd)
+    else:
+        messagebox.showinfo("showinfo",  "  User Not Available",parent= lmd)
+
+
+
+def delet(lm):
+    lmd= tkinter.Tk()
+    lmd.geometry("1500x800")
+    lmd.configure(bg='floral white')
+    logo = Canvas(lmd,bg = "alice blue",height = "100",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Delete your desirable")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="User")
+    deleteUser_textfield =Text(lmd, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    deleteUser_textfield.place(x = 650, y= 250)
+
+
+    delBtn = Button(lmd,text = 'Delete User',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:delete_user(lmd,deleteUser_textfield))
+    delBtn.place(x= 650 , y =400)
+    del_user = Label(lmd, text= "User ID", font= "Times 14 bold")
+    del_user.place(x=540, y= 250)
+    lmd.mainloop()
+def deletebook(fa,deleteisbns_textfield):
+    isbn=deleteisbns_textfield.get('1.0',END)
+    isbnn=(isbn,)
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    olib.execute("SELECT book_ISBN from book")
+    all_isbnns= olib.fetchall()
+    # print(all_isbnns)
+    available=0
+    for i in all_isbnns:
+        book= i
+        b = str(book[0])
+        a = b.strip()
+        c = str(isbn)
+        d  = c.strip()
+        if a == d:
+            available =1
+    if available==1:
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("DELETE FROM book where book_ISBN = %s",isbnn)
+        olib_db.commit()
+        messagebox.showinfo("showinfo", "Book Deleted From database",parent= fa)
+    else:
+        messagebox.showinfo("showinfo", "Book Not Available",parent= fa)
+
+def editbookdetails(lmm,booknamee_textfield,bookisbns_textfield, author_textfield,categoryy_textfield,type_textfield,Lib_id,isbnn):
+    name=booknamee_textfield.get('1.0',END)
+    isbnn = str(isbnn).strip()
+    isbn=bookisbns_textfield.get('1.0',END)
+    at=author_textfield.get('1.0',END)
+    ct=categoryy_textfield.get('1.0',END)
+    ty=type_textfield.get('1.0',END)
+    print(isbnn)
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    query_useer = "UPDATE book SET book_ISBN =%s, book_title = %s,author=%s, booktype=%s, category=%sWhere book_ISBN = %s"
+    values = (isbn,name,at,ty,ct,isbnn)
+    olib.execute(query_useer, values)
+    # olib.execute("UPDATE book SET book_ISBN =%s, book_title = %s,author=%s, booktype=%s, category=%sWhere book_ISBN = %s",(isbn,),(name,),(at,),(ty,),(ct,),(isbn,))
+    olib_db.commit()
+    messagebox.showinfo("showinfo", "Details of book have been edited",parent= lmm)
+       
+
+
+def edit_book(lm,lib_id): 
+    lmm= tkinter.Tk()
+    lmm.geometry("1500x800")
+    lmm.configure(bg='floral white')
+    logo = Canvas(lmm,bg = "alice blue",height = "100",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Edit Book Details")
+    # logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="BOOK")
+
+    def book_field(lmm, isbn, lib_id):
+        isbnn =isbn.get("1.0", END)
+        book_isbn = (isbnn,)
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("SELECT book_ISBN from book")
+        r = olib.fetchall()
+        aval = 0
+        for i in r:
+            isbn = i
+            b= str(isbn[0])
+            a = b.strip()
+            c = str(isbnn)
+            d = c.strip()
+            if a == d:
+                aval = 1
+
+
+        if aval == 1:
+            booknamee_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+            booknamee_textfield.place(x = 630, y= 350)
+            
+            bookisbns_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+            bookisbns_textfield.place(x = 630, y= 400)
+            
+            author_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+            author_textfield.place(x = 630, y= 450)
+            
+
+            categoryy_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+            categoryy_textfield.place(x = 630, y= 500)
+            typee_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+            typee_textfield.place(x = 630, y= 550)
+
+            bookName = Label(lmm, text= "BookName", font= "Times 14 bold")
+            bookName.place(x=520, y= 350)
+
+            isbn = Label(lmm, text= "BOOKISBN", font= "Times 14 bold")
+            isbn.place(x=520, y= 400)
+
+
+            category = Label(lmm, text= "Author", font= "Times 14 bold")
+            category.place(x=530, y= 450)
+
+            author = Label(lmm, text='Category',font= "Times 14 bold")
+            author.place(x= 530, y = 500)
+
+            type = Label(lmm, text='Type',font= "Times 14 bold")
+            type.place(x= 530, y = 550)
+            editBtn = Button(lmm,text = 'ADD ',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:editbookdetails(lmm,booknamee_textfield,bookisbns_textfield, author_textfield,categoryy_textfield,typee_textfield,lib_id,isbnn))
+            editBtn.place(x= 640 , y =600)
+        else:
+            messagebox.showinfo("showinfo", "Book Not Available",parent= lmm)
+    srchisbns_textfield =Text(lmm, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    srchisbns_textfield.place(x = 650, y= 250)
+
+
+    srchBtn = Button(lmm,text = 'Search  Book',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:book_field(lmm,srchisbns_textfield, lib_id))
+    srchBtn.place(x= 950 , y =240)
+    isbn = Label(lmm, text= "BOOKISBN", font= "Times 14 bold")
+    isbn.place(x=500, y= 250)
+
+    lmm.mainloop()
+
+def buttonPressed():
+    fp.destroy()
+    fp1 = tkinter.Tk()
+    fp1.geometry("1500x800")
+    fp1.configure(bg='floral white')
+
+    logo = Canvas(fp1, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+  
+  
+    userID = Label(fp1, text= "User ID", font= "Times 14 bold")
+    userID.place(x=500, y= 200)
+    passWord = Label(fp1, text='Password',font= "Times 14 bold")
+    passWord.place(x= 500, y = 260)
+    userID_textfield =Text(fp1, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    userID_textfield.place(x = 600, y= 200)
+    passWord_textfield = Text(fp1, width =30,height =1,bd =2, fg='black',font=("Times 12"))
+    passWord_textfield.place(x= 600, y= 260)
+    loginBtn = Button(fp1,text = 'Login',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:loginBtn_press(userID_textfield,passWord_textfield,fp1))
+    loginBtn.place(x= 600 , y =320)
+
+    signup_text = Label(fp1, text= "If you are a new user, then", font= "Times 14 bold")
+    signup_text.place(x=570, y= 370)
+
+    signUpBtn = Button(fp1,text = 'SignUp',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:signUpPress(fp1))
+    signUpBtn.place(x= 600 , y =420)
+
+    fp1.mainloop()
+
+def signUpPress(fp1):
+    fp1.destroy()
+    fp2= tkinter.Tk()
+    fp2.geometry("1500x800")
+    fp2.configure(bg='floral white')
+    fp2.title("SignUp Page")
+
+    logo = Canvas(fp2, bd=4, relief =GROOVE, bg = "alice blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+
+    details_text = Label(fp2, text= "Enter the following details :", font= "Times 14 bold")
+    details_text.place(x=600, y= 150)
+
+    fullName = Label(fp2, text= "Full Name", font= "Times 14 bold")
+    fullName.place(x=530, y= 200)
+
+    Email = Label(fp2, text= "Email", font= "Times 14 bold")
+    Email.place(x=530, y= 250)
+
+
+    userID = Label(fp2, text= "User ID", font= "Times 14 bold")
+    userID.place(x=530, y= 300)
+
+    passWord = Label(fp2, text='Password',font= "Times 14 bold")
+    passWord.place(x= 530, y = 350)
+
+    fullName_textfield =Text(fp2, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    fullName_textfield.place(x = 630, y= 200)
+    
+
+
+    email_textfield =Text(fp2, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    email_textfield.place(x = 630, y= 250)
+    
+
+    userID_textfield =Text(fp2, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    userID_textfield.place(x = 630, y= 300)
+    
+
+    
+
+    password_textfield =Text(fp2, width = 30,height =1,bd =2, fg='black',font=("Times 12"))
+    password_textfield.place(x = 630, y= 350)
+    
+    
+
+    registerBtn= Button(fp2,text = 'Register',width=15, font=" Times 14 bold", bg= "navajo white",   command= lambda:Register_Press(fp2,fullName_textfield, email_textfield, userID_textfield, password_textfield))
+    registerBtn.place(x= 660 , y =400)
+    fp2.mainloop()
+
+    # return fullName_textfield,email_textfield,userID_textfield,password_textfield
+
+ 
+
+# def emptyValMsg():
+#     tkMessageBox.showinfo("empty Value", "You cannot proceed until there is an empty field")
+
+def Register_Press(fp2,fName, email, user_id,password):
+    fName = fName.get("1.0", END)
+    # print(len(fName))
+    email = email.get("1.0", END)
+    userID = user_id.get("1.0", END)
+    user_ID = userID,
+    password = password.get("1.0", END)
+    print(len(fName),len(email),len(userID),len(password))
+
+    def check_userid():
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("SELECT user_id from useer")
+        all_userids= olib.fetchall()
+        exists = 0
+
+        for i in all_userids:
+            if i == user_ID:
+                exists = 1
+                return exists
+        return exists
+    
+
+
+
+
+
+    if  len(fName) == 1 or  len(email) == 1 or len(userID) == 1 or len(password) == 1 :
+        invalid_msg = Label(fp2, text = " Some Fields are missing, Plz try again  ", font=  " Times 14  bold", fg = "red" )
+        invalid_msg.place(x = 590, y = 460)
+    elif check_userid() == 1:
+        invalid_msg = Label(fp2, text = " User_ID not available, Try another  ", font=  " Times 14  bold", fg = "red" )
+        invalid_msg.place(x = 590, y = 460)
+    else:
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        query_useer = "INSERT INTO useer (user_id, user_name, email) VALUES (%s, %s, %s)"
+        values = (userID,fName, email)
+        olib.execute(query_useer, values)
+        olib_db.commit()
+
+        query_login = "Insert into login_credentials (user_id, password)  VALUES (%s, %s)"
+        values = (userID, password)
+        olib.execute(query_login, values)
+        olib_db.commit()
+
+
+
+        fp2.destroy()
+        fp3= tkinter.Tk()
+        fp3.geometry("1500x800")
+        fp3.configure(bg='floral white')
+
+        logo = Canvas(fp3, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+        logo.place(x =500, y = 20)
+        logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+        logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+        subscrib = Label(fp3, text= "If you want subscription, please click here", font= "Times 14")
+        subscrib.place(x=525, y= 200)
+        subscribeBtn= Button(text="SUBSCRIBE ", command=lambda: subscription(fp3,user_ID), bg="light blue")
+        subscribeBtn.place(x=645,y=250)
+        free = Label(fp3, text= "If you want to continue free, please click here", font= "Times 14")
+        free.place(x=525, y= 310)
+
+        freeBtn= Button(text="Continue Free",command=lambda: freeBtn_Press(fp3,user_ID), bg = "Light green")
+        freeBtn.place(x=635,y=350)
+
+    fp3.mainloop()
+
+
+
+def freeBtn_Press(fp3, userID):
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    q_subscribe = ("UPDATE useer SET typee = 'Free' where user_id =%s ")
+    value = (userID)
+    olib.execute(q_subscribe,value)
+    olib_db.commit()
+
+    homePage(fp3,userID)
+
+
+
+
+def subscription(fp3,userID):
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    q_subscribe = ("UPDATE useer SET typee = 'Subscriber' where user_id =%s ")
+    value = (userID)
+    search = olib.execute(q_subscribe,value)
+    
+    olib_db.commit()
+    print(search)
+    
+
+
+
+    fp3.destroy()
+    fp4 = tkinter.Tk()
+    fp4.geometry("1500x800")
+    fp4.configure(bg='floral white')
+    logo = Canvas(fp4, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    subscrib = Label(fp4, text= "Congratulations !", font= "Times 14 bold")
+    subscrib.place(x=605, y= 200)
+    subscribed = Label(fp4, text= "You've been subscribed successfuly !", font= "Times 14 ")
+    subscribed.place(x=530, y= 250)
+    b2 = Button(text="proceed ", bg="light green",command=lambda: homePage(fp4, userID), font=" Times 15 bold")
+    b2.place(x=627,y=300)
+    fp4.mainloop()
+
+def loginBtn_press(userID, passWord ,fp1):
+    userid = userID.get('1.0', END)
+    print(userid)
+    user_ID = userid,
+    # print(user_ID)
+    passWorD = passWord.get('1.0', END)
+    password = passWorD,
+    # print(password)
+    olib.execute("SELECT user_id  from login_credentials ")
+    userid_result = olib.fetchall()
+    olib.execute("SELECT password from login_credentials")
+    password_result = olib.fetchall()
+
+    exist = 0
+
+    for i in range(len(userid_result)):
+        if userid_result[i] == user_ID and password_result[i] == password:
+            exist = 1
+
+    if exist == 1:
+        homePage(fp1, userid)
+    else:
+        invalid_msg = Label(fp1,text="Wrong User ID or Password , Please Try Again", font= "Times 12 bold ",fg ="Red"  )
+        invalid_msg.place(x= 800, y = 330)
+
+
+
+
+
+
+
+def homePage(fp134, userID):
+
+    fp134.destroy()
+    
+    mp = Tk()
+    mp.geometry("1500x800")
+    mp.title(" Home Page")
+    mp.configure(bg='floral white')
+    logo = Canvas(mp, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    search_textfield =Text(mp, width = 40,height =1,bd =2, fg='red',font=("Times 12"))
+    search_textfield.place(x = 540, y= 150)
+    search_value = search_textfield.get("1.0", END)
+
+    searchBtn = Button(text="Search", width = 10, bg="light green",command=lambda:search_press(mp, search_textfield, userID), font=" Times 15 bold")
+    searchBtn.place(x=635,y=200)
+
+    categoryBtn = Button( text="Categories" , width = 20, height= 2, relief = FLAT, bg = "light green" , font ='Times 14 bold', command=lambda: book_cats(mp))
+    
+    # categoryMenu =  Menubutton(mp, text= "Categories")
+    categoryBtn.place(x =200, y = 150 )
+   
+
+    
+
+    authorBtn =  Button( text= "Authors", width = 20, height= 2,command=lambda:authors(mp), relief = GROOVE, bg = "light green" , font ='Times 14 bold')
+    authorBtn.place(x =1000, y = 150 )
+    
+    mybooksBtn =  Button(text="My Books", width = 20, bg="light green",command=lambda:mybooks(mp,userID), font=" Times 15 bold")
+    mybooksBtn.place(x=570,y=350)
+
+
+
+    mp.mainloop()
+
+
+
+
+
+def authors(mp):
+    mpa = tkinter.Tk()  #  mpa =>  Main Page Category
+    mpa.geometry("1500x800")
+    mpa.title(" My books")
+    mpa.configure(bg='floral white')
+
+    logo = Canvas(mpa, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    def select_author(a):
+        # a = authors_tree.selection()
+        print(a)
+        # child_id = authors_tree.get_children()[-1]
+        curItem = authors_tree.focus()
+    
+        s = (authors_tree.item(curItem))
+        # print(s)
+        
+        ab_lst = s['values']
+        ab_value = ab_lst[0]
+       
+       
+        
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("SELECT * FROM book where author= %s" , (ab_value,))
+        ab_books = olib.fetchall()
+
+        ab_tree = ttk.Treeview(mpa, show='headings', height=15) #  => ab =author books
+        ab_tree['columns'] = ['ISBN', 'Book Name', 'Author', 'Type','Category']
+        # ab_tree.column('#', width=100, minwidth=20)
+        ab_tree.column('ISBN',anchor=CENTER, width=100, minwidth=100)
+        ab_tree.heading('ISBN',text= 'ISBN')
+        ab_tree.column('Book Name',anchor=CENTER, width=100, minwidth=100)
+        ab_tree.heading('Book Name', text= 'Book Name')
+        ab_tree.column('Author',anchor=CENTER, width=100, minwidth=100)
+        ab_tree.heading('Author',text= 'Author')
+        ab_tree.column('Type',anchor=CENTER, width=100, minwidth=100)
+        ab_tree.heading('Type', text= 'Type')
+        ab_tree.column('Category',anchor=W, width=100, minwidth=100)
+        ab_tree.heading('Category', text= 'Category')
+        counter = 0
+        for i in range(len(ab_books)):
+            counter += 1
+            book_data = ab_books[i]
+            ab_tree.insert('', 'end', text=counter, values=(book_data[0], book_data[1], book_data[2],book_data[3],book_data[4]))
+        ab_tree.place(x = 600, y=200)
+
+        authors_label = Label(mpa, text =  "  Author  Books  ", font = "Helvetica 16 bold", fg ='navy blue', bg='floral white')
+        authors_label.place(x= 760, y = 150)
+    
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    olib.execute("SELECT DISTINCT author from book")
+    all_authors = olib.fetchall()  
+
+    authors_tree = ttk.Treeview(mpa, show='headings', height=15)
+    authors_tree['columns'] = ['categories']
+    authors_tree.column('categories',anchor=CENTER, width=150, minwidth=50)
+    authors_tree.heading('categories',text= 'Categories')
+    authors_tree.bind('<ButtonRelease-1>', select_author)
+
+    counter = 0
+    for i in range(len(all_authors)):
+        counter += 1
+        book_data = all_authors[i]
+        print(book_data[0])
+        authors_tree.insert('', 'end', text=counter, values=(book_data[0],))
+    authors_tree.place(x = 200, y =200)
+
+    bookcats_Label = Label(mpa, text =  "  Categories ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+    bookcats_Label.place(x= 300, y = 150)
+
+
+def book_cats(mp):
+    mpc = tkinter.Tk()  #  mpc =>  Main Page Category
+    mpc.geometry("1500x800")
+    mpc.title(" My books")
+    mpc.configure(bg='floral white')
+
+    logo = Canvas(mpc, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    def select_cat(a):
+        # a = bookcats_tree.selection()
+        print(a)
+        # child_id = bookcats_tree.get_children()[-1]
+        curItem = bookcats_tree.focus()
+    
+        s = (bookcats_tree.item(curItem))
+        # print(s)
+        
+        cat_lst = s['values']
+        cat_value = cat_lst[0]
+       
+       
+        
+        olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+        olib= olib_db.cursor()
+        olib.execute("SELECT * FROM book where category= %s" , (cat_value,))
+        cat_books = olib.fetchall()
+
+        cat_tree = ttk.Treeview(mpc, show='headings', height=15)
+        cat_tree['columns'] = ['ISBN', 'Book Name', 'Author', 'Type','Category']
+        # cat_tree.column('#', width=100, minwidth=20)
+        cat_tree.column('ISBN',anchor=CENTER, width=100, minwidth=100)
+        cat_tree.heading('ISBN',text= 'ISBN')
+        cat_tree.column('Book Name',anchor=CENTER, width=100, minwidth=100)
+        cat_tree.heading('Book Name', text= 'Book Name')
+        cat_tree.column('Author',anchor=CENTER, width=100, minwidth=100)
+        cat_tree.heading('Author',text= 'Author')
+        cat_tree.column('Type',anchor=CENTER, width=100, minwidth=100)
+        cat_tree.heading('Type', text= 'Type')
+        cat_tree.column('Category',anchor=W, width=100, minwidth=100)
+        cat_tree.heading('Category', text= 'Category')
+        counter = 0
+        for i in range(len(cat_books)):
+            counter += 1
+            book_data = cat_books[i]
+            cat_tree.insert('', 'end', text=counter, values=(book_data[0], book_data[1], book_data[2],book_data[3],book_data[4]))
+        cat_tree.place(x = 600, y=200)
+
+        cat_Label = Label(mpc, text =  "  Category Books  ", font = "Helvetica 16 bold", fg ='navy blue', bg='floral white')
+        cat_Label.place(x= 760, y = 150)
+    
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    olib.execute("SELECT DISTINCT category from book")
+    all_cats = olib.fetchall()  
+
+    bookcats_tree = ttk.Treeview(mpc, show='headings', height=15)
+    bookcats_tree['columns'] = ['categories']
+    bookcats_tree.column('categories',anchor=CENTER, width=150, minwidth=50)
+    bookcats_tree.heading('categories',text= 'Categories')
+    bookcats_tree.bind('<ButtonRelease-1>', select_cat)
+
+    counter = 0
+    for i in range(len(all_cats)):
+        counter += 1
+        book_data = all_cats[i]
+        print(book_data[0])
+        bookcats_tree.insert('', 'end', text=counter, values=(book_data[0],))
+    bookcats_tree.place(x = 200, y =200)
+
+    bookcats_Label = Label(mpc, text =  "  Categories ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+    bookcats_Label.place(x= 200, y = 150)
+
+def mybooks(mp, user_id ):
+    # mpb =  My books page from Main Page 
+
+    mpb = tkinter.Tk()
+    mpb.geometry("1500x800")
+    mpb.title(" My books")
+    mpb.configure(bg='floral white')
+
+    logo = Canvas(mpb, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+    logo.place(x =500, y = 20)
+    logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+    logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    olib.execute("SELECT * from getbook where user_id = %s", (user_id,))
+    user_books = olib.fetchall()
+
+    mybooks_tree = ttk.Treeview(mpb, show='headings', height=10)
+    mybooks_tree['columns'] = ['USER ID', 'Book ISBN', 'Issue Date', 'Expiry Date']
+        # rec_tree.column('#', width=100, minwidth=20)
+    mybooks_tree.column('USER ID',anchor=CENTER, width=100, minwidth=20)
+    mybooks_tree.heading('USER ID',text= 'USER ID')
+    mybooks_tree.column('Book ISBN',anchor=CENTER, width=100, minwidth=20)
+    mybooks_tree.heading('Book ISBN', text= 'Book ISBN')
+    mybooks_tree.column('Issue Date',anchor=CENTER, width=100, minwidth=20)
+    mybooks_tree.heading( 'Issue Date',text= 'Issue Date')
+    mybooks_tree.column('Expiry Date',anchor=CENTER, width=100, minwidth=20)
+    mybooks_tree.heading('Expiry Date', text= 'Expiry Date')
+    # mybooks_tree.bind('<ButtonRelease-1>', timeAval)
+    counter = 0
+    for i in range(len(user_books)):
+        counter += 1
+        book_data = user_books[i]
+        mybooks_tree.insert('', 'end', text=counter, values=(book_data[0], book_data[1], book_data[2],book_data[3]))
+    mybooks_tree.place(x = 500, y =200)
+
+    mybooks_Label = Label(mpb, text =  "  Your Books for Reading ! ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+    mybooks_Label.place(x= 560, y = 150)
+    
+def search_press(mp, search_textfield, userID ):
+    book_name = search_textfield.get("1.0",END)
+    # book_name = str(book_name).strip()
+    
+    # print(book_name)
+    
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+
+    olib.execute( "Select * from book where book_title = %s", (book_name,))
+    result = olib.fetchall()
+    print(result)
+    olib_db.commit()
+    if len(book_name )== 0 or result == []:
+        messagebox.showinfo("showinfo", "Not Available",parent= mp) 
+    else:
+
+        mps = tkinter.Tk()
+        mps.geometry("1500x800")
+        mps.title(" Home Page")
+        mps.configure(bg='floral white')
+
+        logo = Canvas(mps, bd=4, relief =GROOVE, bg = "light blue",height = "80",width= "400")  
+        logo.place(x =500, y = 20)
+        logo.create_text(200,20,fill="darkblue",font="Rockwell 20 italic bold",text="Online Library Management")
+        logo.create_text(200,60,fill="darkblue",font="Rockwell 20 italic bold",text="System")
+
+        def selectItem(a):
+            curItem = s_tree.focus()
+            s = (s_tree.item(curItem))
+            isbn_lst = s['values']
+           
+            add_to_read =  Button(mps,text=" Add to My Books", width = 20, bg="light green",command=lambda:add_to_Read(mps,userID,isbn_lst[0]), font=" Times 12 bold")
+            add_to_read.place(x= 250, y =550)
+            
+            # Recommendor List Box 
+            
+            olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+            olib= olib_db.cursor()
+            olib.execute("SELECT * FROM book where category= %s or author= %s ", (isbn_lst[4],isbn_lst[2]))
+            cat_books = olib.fetchall()
+
+            rec_tree = ttk.Treeview(mps, show='headings', height=15)
+            rec_tree['columns'] = ['ISBN', 'Book Name', 'Author', 'Type','Category']
+            # rec_tree.column('#', width=100, minwidth=20)
+            rec_tree.column('ISBN',anchor=CENTER, width=100, minwidth=20)
+            rec_tree.heading('ISBN',text= 'ISBN')
+            rec_tree.column('Book Name',anchor=CENTER, width=100, minwidth=20)
+            rec_tree.heading('Book Name', text= 'Book Name')
+            rec_tree.column('Author',anchor=CENTER, width=100, minwidth=20)
+            rec_tree.heading('Author',text= 'Author')
+            rec_tree.column('Type',anchor=CENTER, width=100, minwidth=20)
+            rec_tree.heading('Type', text= 'Type')
+            rec_tree.column('Category',anchor=CENTER, width=100, minwidth=20)
+            rec_tree.heading('Category', text= 'Category')
+            counter = 0
+            for i in range(len(cat_books)):
+                counter += 1
+                book_data = cat_books[i]
+                rec_tree.insert('', 'end', text=counter, values=(book_data[0], book_data[1], book_data[2],book_data[3],book_data[4]))
+            rec_tree.place(x = 800, y=200)
+
+            rec_Label = Label(mps, text =  " Recommended Books to Read ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+            rec_Label.place(x= 890, y = 150)
+
+        s_tree = ttk.Treeview(mps, show='headings', height=15)
+        s_tree['columns'] = ['ISBN', 'Book Name', 'Author', 'Type','Category']
+            # rec_tree.column('#', width=100, minwidth=20)
+        s_tree.column('ISBN',anchor=CENTER, width=100, minwidth=20)
+        s_tree.heading('ISBN',text= 'ISBN')
+        s_tree.column('Book Name',anchor=CENTER, width=100, minwidth=20)
+        s_tree.heading('Book Name', text= 'Book Name')
+        s_tree.column('Author',anchor=CENTER, width=100, minwidth=20)
+        s_tree.heading('Author',text= 'Author')
+        s_tree.column('Type',anchor=CENTER, width=100, minwidth=20)
+        s_tree.heading('Type', text= 'Type')
+        s_tree.column('Category',anchor=CENTER, width=100, minwidth=20)
+        s_tree.heading('Category', text= 'Category')
+        s_tree.bind('<ButtonRelease-1>', selectItem)
+        counter = 0
+        for i in range(len(result)):
+            counter += 1
+            book_data = result[i]
+            s_tree.insert('', 'end', text=counter, values=(book_data[0], book_data[1], book_data[2],book_data[3],book_data[4]))
+        s_tree.place(x = 100, y=200)        
+
+        sec_Label = Label(mps, text =  "  The Search Result is Given Below ", font = "Helvetica 14 bold", fg ='navy blue', bg='floral white')
+        sec_Label.place(x= 190, y = 150)
+
+
+def add_to_Read(mps,userID, isbn):
+    olib_db = mysql.connect(  host="localhost",user="root",password="ali123", database="onlinelibrary")
+    olib= olib_db.cursor()
+    olib.execute("SELECT typee from useer where user_id = %s",(userID,))
+    user_type = olib.fetchall()
+    user = user_type[0]
+    user_type =str(user[0]).strip()
+    # print(user_type)
+    olib.execute("SELECT booktype from book where book_ISBN = %s",(isbn,))
+    book_type = olib.fetchall()
+    book = book_type[0]
+    book_type = str(book[0]).strip()
+    # print(user_type,book_type)
+    olib.execute("SELECT  count(user_id) from getbook where user_id = %s", (userID,))
+    user_count = olib.fetchone()
+
+    print(user_type, book_type)
+    print(user_count,user_count[0])
+    if user_type == 'Free' and book_type == 'Free' :
+        if user_count[0] >= 2:
+           messagebox.showinfo("showinfo", "Maximum books limit reached",parent= mps) 
+        else:
+            try:
+                issue_date = (datetime.date.today()).isoformat()
+                expiry_date =(datetime.date.today() +timedelta(days =10)).isoformat()
+                q_insert =" INSERT INTO getbook ( user_id, book_ISBN, issue_date, expiry_date) VALUES( %s,%s, %s, %s)" 
+                values = (userID,isbn,issue_date,expiry_date )
+                olib.execute(q_insert, values)
+                olib_db.commit()
+
+                messagebox.showinfo("showinfo", "Book  added to My Books, Happy Reading !",parent= mps)
+            except:
+                messagebox.showinfo("showinfo", "Book Already added to My Books",parent= mps)
+    elif user_type == 'Subscriber' and (book_type == 'Free' or book_type == 'Paid'):
+        if user_count[0] >= 5 :
+            messagebox.showinfo("showinfo", "Maximum books limit reached",parent= mps)
+        else:
+            try:
+                issue_date = (datetime.date.today()).isoformat()
+                expiry_date =(datetime.date.today() +timedelta(days =30)).isoformat()
+                q_insert =" INSERT INTO getbook ( user_id, book_ISBN, issue_date, expiry_date) VALUES( %s,%s, %s, %s)" 
+                values = (userID,isbn,issue_date,expiry_date )
+                olib.execute(q_insert, values)
+                olib_db.commit()
+
+                messagebox.showinfo("showinfo", "Book  added to My Books, Happy Reading !",parent= mps)
+            except:
+                messagebox.showinfo("showinfo", "Book Already added to My Books",parent= mps)
+        
+    else:
+        messagebox.showinfo("showinfo", "You can,t read this books, Thanks",parent= mps)
+    
+    
+
+    
+
+if __name__ == "__main__":
+    mainPage()
+
+
+
+
